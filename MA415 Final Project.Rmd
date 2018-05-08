@@ -1,0 +1,420 @@
+---
+title: "MA415 Final Project"
+author: "Lingjia Zhang"
+date: "May 3, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This project is aim to compare and contrast the twitter reation to The Ellen Show and FallonTonight show. Since I am an international student, wathcing American TV shows is my way of fitting into American society. In this case, I picked two of my favorite TV shows and try to compare the twitter reactions to them. I did the project through three aspects: The most frequent words appears in twitter; positive/negative words about tweets mentioning Ellen show/FallonTonight show and compare the words in twitter with the text of Martin Luther King's speech "I have a dream" and the text of Shakespeare's novel "Hamlet" to see if there is any similarity.
+
+```{r}
+options(warn = -1)
+library(twitteR)
+library(tidyverse)
+library(ggplot2)
+library(tidytext)
+library(stringr)
+library(scales)
+library(wordcloud2)
+library(janeaustenr)
+library(htmlwidgets)
+data(stop_words)
+
+#Add stop words to filter out
+stop_words <- add_row(stop_words, word = "t.co", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "https", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "http", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "rt", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "1", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "2", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "3", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "9", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "rt", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "https", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "http", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "t.co", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "1", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "2", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "3", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "de", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "amp", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "na", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "false", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "iphone", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "android", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "07", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "05", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "true", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "twitter", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "twitter.com", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "rel", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "nofollow", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "2018", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "ed", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "href", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "download", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "19", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "00a0", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "00bd", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0627", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "18", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0644", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "20", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "15846407", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0646", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "998", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "ueextuv8no", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "22", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "21", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0648", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "17", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "23", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "737", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "bu5isy87gr", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0082", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "00b8", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0643", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0631", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "00b1", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "00bc", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "008f", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "2661", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "00b6", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "00be", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "tpiwmxe4kr", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0642", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0645", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0623", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0629", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0628", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "064a", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "nu5isy87gr", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "kyderby", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "py5k1jryr3", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "icymi", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "6b", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0633", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0647", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0641", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "12", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "39", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0651", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "57", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "15", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "59", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "54", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "16", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "49", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0639", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "008d", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "0649", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "062b", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "01", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "10", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "55", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "mobile.twitter.com", lexicon = "SMART")
+stop_words <- add_row(stop_words, word = "ipad", lexicon = "SMART")
+
+Ellen <- read.delim("TheEllenShow.txt", header=FALSE)
+Fallon <- read.delim("FallonTonight.txt", header = FALSE)
+
+# The directory address of speech text might be different.
+
+# Read text
+tidy_ellen<- data_frame(paragraph = 149, text = as.character(Ellen$V1)) %>% 
+  unnest_tokens(word, text)
+tidy_fallon <- data_frame(paragraph = 149, text= as.character(Fallon$V1)) %>% 
+  unnest_tokens(word, text)
+```
+
+
+```{r}
+consumer_key <- "Hai8iXZX9NqAYhtgKvPlrN9si"
+consumer_secret <- "ldY160OvFQkOmQOtYXDdEQGTi6OA8rdab2a41rO6CoixAKXg9B"
+access_token <- "2428256293-mPmHzkQJVeKAuAclP87VEoKe5982AeKxTVzbPnD"
+access_secret <- "y7daEg7oJED1vaxNixV5WXklrz38XV4k2CHDj5Y3HAvOQ"
+setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
+
+# Get tweets about The Ellen Show
+tw = twitteR::searchTwitter('TheEllenShow', n = 5000, since = '2018-5-03', retryOnRateLimit = 4)
+TheEllenShow = twitteR::twListToDF(tw)
+clean_TheEllenShow <- as_tibble(TheEllenShow)
+write.csv(clean_TheEllenShow, file = "TheEllenShow.csv")
+
+
+# Get tweets about The Tonight Show
+tw = twitteR::searchTwitter('FallonTonight', n = 5000, since = '2018-5-03', retryOnRateLimit = 4)
+FallonTonight = twitteR::twListToDF(tw)
+clean_FallonTonight <- as_tibble(FallonTonight)
+write.csv(clean_FallonTonight, file = "FallonTonight.csv")
+
+```
+
+Helper function
+```{r}
+
+getFreq <- function(file, name, num) {
+  text <- readLines(file)
+  text_df <- data_frame(line = 1:length(text), text = text )
+  text_df <- text_df %>%
+    unnest_tokens(word, text) %>% 
+    count(word, sort = TRUE) %>% 
+    filter(n > num) %>% 
+    anti_join(stop_words, by = "word") %>% 
+    mutate(word = reorder(word, n)) %>% 
+    ggplot(aes(word, n), col = "blue") +
+    geom_col() +
+    xlab(NULL) +
+    ggtitle(name) +
+    coord_flip()
+}
+
+getWordCloud <- function(file, min_freq, max_word) {
+  df <- getTidyTibble(file)
+  cloud <- df %>% anti_join(stop_words, by = "word") %>%
+  count(word, sort = TRUE)
+  temp <- wordcloud(words = cloud$word, freq = cloud$n, min.freq = min_freq,
+          max.words=max_word, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+  return(temp)
+}
+
+getTidyTibble <- function(file) {
+  text <- readLines(file)
+  df <- data_frame(line = 1:length(text), text = text)
+  df <- df %>% 
+    unnest_tokens(word, text) %>% 
+    anti_join(stop_words)
+  return(df)
+}
+```
+
+# read csv file and clean data
+```{r}
+Ellen = readLines("TheEllenShow.csv")
+write.table(Ellen,"TheEllenShow.txt",sep="\t",row.names=FALSE)
+
+Fallon = readLines("FallonTonight.csv")
+write.table(Fallon,"FallonTonight.txt",sep="\t",row.names=FALSE)
+
+```
+
+# most frequent word
+```{r}
+Ellen <- getFreq('TheEllenShow.txt', 'Most used words in tweets mentioing TheEllenShow', 200)
+Fallon <-  getFreq('FallonTonight.txt', 'Most used words in tweet mentioing FallonTonight', 200)
+
+
+Ellen
+Fallon
+
+```
+Analysis: The graph shows the most frequent words in twitter after May 3rd. When I try to compare the similarity of the frequent words between The Ellen Show and FallonTonight show, I find that because Adam Levine attended The Ellen Show recently, it became the most frequent word, and also since Aricana Grande attended FallonTonight show recently, it became the most frequent word. Basically, whoever attends the show will definitely become next day's headline. Also, because FalonTonight show loves invite singers to the show, the words regarding music appear frequently. 
+
+
+## sentiment analysis
+
+```{r}
+# Sentiment analysis with nrc
+nrc_joy <- get_sentiments("nrc") %>% 
+  filter(sentiment == "joy")
+nrc_anger <- get_sentiments("nrc") %>% 
+  filter(sentiment == "anger")
+nrc_anticipation <- get_sentiments("nrc") %>% 
+  filter(sentiment == "anticipation")
+nrc_sadness <- get_sentiments("nrc") %>% 
+  filter(sentiment == "sadness")
+
+# Ellen show sentiment analysis with nrc
+ellen_joy <- tidy_ellen %>%
+  inner_join(nrc_joy) %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 10) %>%
+  mutate(word = reorder(word, n))
+
+ellen_anger <- tidy_ellen %>%
+  inner_join(nrc_anger) %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 5) %>%
+  mutate(word = reorder(word, n))
+
+ellen_anticipation <- tidy_ellen %>%
+  inner_join(nrc_anticipation) %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 10) %>%
+  mutate(word = reorder(word, n))
+
+ellen_sadness <- tidy_ellen %>%
+  inner_join(nrc_sadness) %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 5) %>%
+  mutate(word = reorder(word, n))
+
+gridExtra::grid.arrange(
+  ggplot(ellen_joy, aes(word, n)) +
+    geom_col() +
+    xlab(NULL) +
+    coord_flip() +
+    ggtitle("Ellen Joy"),
+  ggplot(ellen_anger, aes(word, n)) +
+    geom_col() +
+    xlab(NULL) +
+    coord_flip() +
+    ggtitle("Ellen Anger"),
+  ggplot(ellen_anticipation, aes(word, n)) +
+    geom_col() +
+    xlab(NULL) +
+    coord_flip() +
+    ggtitle("Ellen Anticipation"),
+  ggplot(ellen_sadness, aes(word, n)) +
+    geom_col() +
+    xlab(NULL) +
+    coord_flip() +
+    ggtitle("Ellen Sadness"),
+  nrow=1
+)
+```
+Analysis: This graph shows the positive/negative words about tweets mentioning Ellen show. As we can see in the graph, the frequency of positive words is much bigger than the frequency of negative words regarding Ellen show. In Ellen anticipation, we can tell that many people are happy to watch the show. In Ellen Joy, "true" appears over 3000 times and "love" appears over hundreds of times, which prove that Ellen show brings people love and joy. In Ellen Anger, the most frequent word "hit" only appears less than 100 times. 
+
+## More sentiment analysis for Fallon show
+```{r}
+# Sentiment analysis with nrc
+nrc_joy <- get_sentiments("nrc") %>% 
+  filter(sentiment == "joy")
+nrc_anger <- get_sentiments("nrc") %>% 
+  filter(sentiment == "anger")
+nrc_anticipation <- get_sentiments("nrc") %>% 
+  filter(sentiment == "anticipation")
+nrc_sadness <- get_sentiments("nrc") %>% 
+  filter(sentiment == "sadness")
+
+# Fallon show sentiment analysis with nrc
+fallon_joy <- tidy_fallon %>%
+  inner_join(nrc_joy) %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 10) %>%
+  mutate(word = reorder(word, n))
+
+fallon_anger <- tidy_fallon %>%
+  inner_join(nrc_anger) %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 5) %>%
+  mutate(word = reorder(word, n))
+
+fallon_anticipation <- tidy_fallon %>%
+  inner_join(nrc_anticipation) %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 10) %>%
+  mutate(word = reorder(word, n))
+
+fallon_sadness <- tidy_fallon %>%
+  inner_join(nrc_sadness) %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 5) %>%
+  mutate(word = reorder(word, n))
+
+gridExtra::grid.arrange(
+  ggplot(fallon_joy, aes(word, n)) +
+    geom_col() +
+    xlab(NULL) +
+    coord_flip() +
+    ggtitle("Fallon Joy"),
+  ggplot(fallon_anger, aes(word, n)) +
+    geom_col() +
+    xlab(NULL) +
+    coord_flip() +
+    ggtitle("Fallon Anger"),
+  ggplot(fallon_anticipation, aes(word, n)) +
+    geom_col() +
+    xlab(NULL) +
+    coord_flip() +
+    ggtitle("Fallon Anticipation"),
+  ggplot(fallon_sadness, aes(word, n)) +
+    geom_col() +
+    xlab(NULL) +
+    coord_flip() +
+    ggtitle("Fallon Sadness"),
+  nrow=1
+)
+```
+Analysis: This graph shows the positive/negative words about tweets mentioning FallonTonight show. As we can see in the graph, the frequency of positive words is similar with the frequency of negative words regarding FallonTonight show. In Fallon anticipation, we can tell that some people expect to watch the show. In Ellen Joy, "musical" appears over 300 times and "sing" appears over 100 times, which shows that FallonTonight show loves to show the audiences content regarding music. In Ellen Anger, the most frequent words "challenge" and "hit" appears appears over 300 times. 
+
+Martin Luther King Similarity Analysis
+```{r}
+ellen_df <- getTidyTibble("TheEllenShow.txt")
+fallon_df <- getTidyTibble("FallonTonight.txt")
+mlk_df <- getTidyTibble('mlk.txt')
+
+frequency <- bind_rows(mutate(ellen_df, author = "Ellen"),
+                       mutate(fallon_df, author = "Fallon"),
+                       mutate(mlk_df, author = "Martin Luther King")) %>% 
+  mutate(word = str_extract(word, "[a-z']+")) %>%
+  count(author, word) %>%
+  group_by(author) %>%
+  mutate(proportion = n / sum(n)) %>% 
+  select(-n) %>% 
+  spread(author, proportion) %>% 
+  gather(author, proportion, `Ellen`:`Fallon`)
+
+ggplot(frequency, aes(x = proportion, y = `Martin Luther King`, color = abs(`Martin Luther King` - proportion))) +
+  geom_abline(color = "gray40", lty = 2) +
+  geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
+  geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+  scale_x_log10(labels = percent_format()) +
+  scale_y_log10(labels = percent_format()) +
+  ggtitle('Similarity analysis between Ellen and Fallon tweets with MLK I Have a Dream speech') +
+  scale_color_gradient(limits = c(0, 0.001), low = "darkslategray4", high = "gray75") +
+  facet_wrap(~author, ncol = 2) +
+  theme(legend.position="none") +
+  labs(y = "Martin Luther King", x = NULL)
+```
+Analysis: The reason that I compared the words Ellen and Fallon tweets with Martin Luther King's speech is I want to know if there is any similarity between famous talkshow host and famous speaker. As the graph shows, there is not much similarity between them. Maybe since Martin Luther King talked much about freedom in the speech, and nowadays we are living in a society with much more freedom, so we do not talk about freedom that much in the show.
+
+Shakespeare Similarity Analysis
+```{r}
+ellen_df <- getTidyTibble("TheEllenShow.txt")
+fallon_df <- getTidyTibble("FallonTonight.txt")
+hamlet_df <- getTidyTibble('hamlet.txt')
+
+frequency <- bind_rows(mutate(ellen_df, author = "Ellen"),
+                       mutate(fallon_df, author = "Fallon"),
+                       mutate(mlk_df, author = "Shakespeare")) %>% 
+  mutate(word = str_extract(word, "[a-z']+")) %>%
+  count(author, word) %>%
+  group_by(author) %>%
+  mutate(proportion = n / sum(n)) %>% 
+  select(-n) %>% 
+  spread(author, proportion) %>% 
+  gather(author, proportion, `Ellen`:`Fallon`)
+
+ggplot(frequency, aes(x = proportion, y = `Shakespeare`, color = abs(`Shakespeare` - proportion))) +
+  geom_abline(color = "gray40", lty = 2) +
+  geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
+  geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+  scale_x_log10(labels = percent_format()) +
+  scale_y_log10(labels = percent_format()) +
+  ggtitle('Similarity analysis between Ellen and Fallon tweets with Shakespeare Hamlet') +
+  scale_color_gradient(limits = c(0, 0.001), low = "darkslategray4", high = "gray75") +
+  facet_wrap(~author, ncol = 2) +
+  theme(legend.position="none") +
+  labs(y = "Shakespeare", x = NULL)
+```
+Analysis: The reason that I compared the words Ellen and Fallon tweets with Shakespear's novel "Hamlet" is first I like Shakespeare pretty much, and second I want to know if people still use any English words in Shakespear's book. As the graph shows, there is not much similarity between them. The English in Shakespear's book is too old is one reason, and maybe because there is less people reading his book now.
+
+## Word cloud
+```{r}
+library(wordcloud)
+ellen_cloud <- getWordCloud('TheEllenShow.txt', 200, 600)
+Fallon_cloud <- getWordCloud('FallonTonight.txt', 200, 600)
+
+ellen_cloud
+Fallon_cloud
+
+```
